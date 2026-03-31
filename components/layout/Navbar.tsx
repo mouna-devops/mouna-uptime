@@ -11,7 +11,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" alt="MouNa Monitoring" width={64} height={64} />
         </Link>
-{/*         
+        {/*         
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
           <Link href="/#features" className="hover:text-primary transition-colors">
             Features
@@ -28,9 +28,9 @@ export function Navbar() {
           <Link href="/login" className="hidden text-sm font-medium text-gray-600 hover:text-primary sm:block dark:text-gray-300">
             Login
           </Link>
-          <Link href="/signup">
+          {/* <Link href="/signup">
             <Button>Sign Up</Button>
-          </Link>
+          </Link> */}
         </div>
       </div>
     </header>

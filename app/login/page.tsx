@@ -33,7 +33,7 @@ export default async function LoginPage({
       <div className="max-w-md w-full space-y-8">
         <div className="flex flex-col items-center justify-center">
           <Link href="/" className="flex items-center gap-2 mb-8">
-         <Image src="/logo.png" alt="MouNa Monitoring" width={64} height={64} />
+            <Image src="/logo.png" alt="MouNa Monitoring" width={64} height={64} />
           </Link>
         </div>
 
@@ -70,9 +70,9 @@ export default async function LoginPage({
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-gray-200 dark:border-gray-800" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
+              {/* <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-2 text-gray-500 dark:bg-gray-950 dark:text-gray-400">Or continue with</span>
-              </div>
+              </div> */}
             </div>
             {/* <div className="grid grid-cols-2 gap-4">
               <Button variant="outline" className="w-full gap-2 text-sm font-medium">
@@ -83,14 +83,14 @@ export default async function LoginPage({
               </Button>
             </div> */}
           </CardContent>
-          <CardFooter className="flex justify-center flex-col gap-2">
+          {/* <CardFooter className="flex justify-center flex-col gap-2">
             <div className="text-sm text-gray-500 dark:text-gray-400">
               Don&apos;t have an account?{" "}
               <Link href="/signup" className="text-primary hover:underline font-medium">
                 Sign up
               </Link>
             </div>
-          </CardFooter>
+          </CardFooter> */}
         </Card>
       </div>
     </div>
