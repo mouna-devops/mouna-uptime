@@ -3,12 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "run-p next-dev checker",
-    "next-dev": "next dev",
-    "checker": "tsx scripts/checker.ts",
+    "dev": "next dev",
     "build": "next build",
-    "start": "run-p next-start checker",
-    "next-start": "next start",
+    "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
