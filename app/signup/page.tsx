@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { signup } from "@/lib/actions/auth";
 import Image from "next/image";
+import { SubmitButton } from "@/components/auth/SubmitButton";
 
 function errorMessage(code?: string) {
   switch (code) {
@@ -63,7 +64,7 @@ export default async function SignUpPage({
                 <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
                 <Input id="password" name="password" type="password" required minLength={8} />
               </div>
-              <Button className="w-full" type="submit">Create Account</Button>
+              <SubmitButton>Create Account</SubmitButton>
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">

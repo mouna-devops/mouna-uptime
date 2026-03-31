@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Webhook, Plus, Trash2 } from "lucide-react";
+import { Webhook, Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
@@ -13,6 +13,7 @@ export default function AlertsSettings() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadContacts = async () => {
@@ -29,6 +30,7 @@ export default function AlertsSettings() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSaving(true);
     try {
       await createAlertContact({ type: "Webhook", value });
       setIsAddModalOpen(false);
@@ -36,6 +38,8 @@ export default function AlertsSettings() {
       loadContacts();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add webhook");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -117,7 +121,13 @@ export default function AlertsSettings() {
           </div>
           <div className="pt-4 flex justify-end gap-3">
             <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-            <Button type="submit">Add Webhook</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Adding...
+                </span>
+              ) : "Add Webhook"}
+            </Button>
           </div>
         </form>
       </Modal>

@@ -7,7 +7,8 @@
     "next-dev": "next dev",
     "checker": "tsx scripts/checker.ts",
     "build": "next build",
-    "start": "next start",
+    "start": "run-p next-start checker",
+    "next-start": "next start",
     "lint": "eslint"
   },
   "dependencies": {

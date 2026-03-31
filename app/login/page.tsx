@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { login } from "@/lib/actions/auth";
 import Image from "next/image";
+import { SubmitButton } from "@/components/auth/SubmitButton";
 
 function errorMessage(code?: string) {
   switch (code) {
@@ -64,7 +65,7 @@ export default async function LoginPage({
                 </div>
                 <Input id="password" name="password" type="password" required />
               </div>
-              <Button className="w-full" type="submit">Log in</Button>
+              <SubmitButton>Log in</SubmitButton>
             </form>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

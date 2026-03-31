@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { CheckCircle, AlertTriangle, XCircle, Search, Plus, Play, Pause, Trash2, Edit2 } from "lucide-react";
+import { CheckCircle, AlertTriangle, XCircle, Search, Plus, Play, Pause, Trash2, Edit2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -20,6 +20,7 @@ export default function MonitorsList() {
   const [url, setUrl] = useState("");
   const [type, setType] = useState("HTTP(S)");
   const [interval, setInterval] = useState("1");
+  const [saving, setSaving] = useState(false);
 
   const loadMonitors = async () => {
     setLoading(true);
@@ -38,10 +39,12 @@ export default function MonitorsList() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     await createMonitor({ name, url, type, interval: parseInt(interval) });
     setIsAddModalOpen(false);
     setName("");
     setUrl("");
+    setSaving(false);
     loadMonitors();
   };
 
@@ -178,7 +181,13 @@ export default function MonitorsList() {
           </div>
           <div className="pt-4 flex justify-end gap-3">
             <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-            <Button type="submit">Create Monitor</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Creating...
+                </span>
+              ) : "Create Monitor"}
+            </Button>
           </div>
         </form>
       </Modal>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Activity, Globe, Lock, Plus, Search, ExternalLink, Settings, Trash2 } from "lucide-react";
+import { Activity, Globe, Lock, Plus, Search, ExternalLink, Settings, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
@@ -15,6 +15,7 @@ export default function StatusPagesSettings() {
   const [pages, setPages] = useState<any[]>([]);
   const [monitors, setMonitors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
@@ -35,11 +36,13 @@ export default function StatusPagesSettings() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     await createStatusPage({ name, domain, isPublic, monitorIds: selectedMonitors });
     setIsAddModalOpen(false);
     setName("");
     setDomain("");
     setSelectedMonitors([]);
+    setSaving(false);
     loadData();
   };
 
@@ -132,7 +135,13 @@ export default function StatusPagesSettings() {
           </div>
           <div className="pt-4 flex justify-end gap-3">
             <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-            <Button type="submit">Create Page</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Creating...
+                </span>
+              ) : "Create Page"}
+            </Button>
           </div>
         </form>
       </Modal>
