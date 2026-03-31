@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "run-p next-dev local-cron",
+    "next-dev": "next dev",
+    "local-cron": "tsx scripts/local-cron.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
