@@ -27,6 +27,7 @@ model Monitor {
   url         String
   type        String      // HTTP, Ping, Port
   interval    Int         // Interval in minutes
+  timeout     Int         @default(30) // Timeout in seconds
   status      String      @default("up") // up, down, paused
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

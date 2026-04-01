@@ -71,7 +71,7 @@ export async function getMonitor(id: string) {
   });
 }
 
-export async function createMonitor(data: { name: string; url: string; type: string; interval: number }) {
+export async function createMonitor(data: { name: string; url: string; type: string; interval: number; timeout: number }) {
   const userId = await requireSessionUserId();
   await ensureUserExists(userId);
   
@@ -82,6 +82,7 @@ export async function createMonitor(data: { name: string; url: string; type: str
       url: data.url,
       type: data.type,
       interval: data.interval,
+      timeout: data.timeout,
       status: "up",
     }
   });
@@ -91,7 +92,7 @@ export async function createMonitor(data: { name: string; url: string; type: str
   return monitor;
 }
 
-export async function updateMonitor(id: string, data: { name: string; url: string; type: string; interval: number }) {
+export async function updateMonitor(id: string, data: { name: string; url: string; type: string; interval: number; timeout: number }) {
   const userId = await requireSessionUserId();
   const monitor = await db.monitor.updateMany({
     where: { id, userId },
@@ -100,6 +101,7 @@ export async function updateMonitor(id: string, data: { name: string; url: strin
       url: data.url,
       type: data.type,
       interval: data.interval,
+      timeout: data.timeout,
     }
   });
   
@@ -125,4 +127,55 @@ export async function toggleMonitorStatus(id: string, currentStatus: string) {
   });
   revalidatePath("/dashboard/monitors");
   revalidatePath("/dashboard");
+}
+
+export async function getDashboardStats() {
+  const userId = await getSessionUserId();
+  if (!userId) return { uptime30d: "100.00", trendData: [] };
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const totalChecks = await db.check.count({
+    where: { monitor: { userId }, createdAt: { gte: thirtyDaysAgo } }
+  });
+
+  const upChecks = await db.check.count({
+    where: { monitor: { userId }, status: "up", createdAt: { gte: thirtyDaysAgo } }
+  });
+
+  const uptime30d = totalChecks > 0 ? ((upChecks / totalChecks) * 100).toFixed(2) : "100.00";
+
+  const twentyFourHoursAgo = new Date();
+  twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+  const recentChecks = await db.check.findMany({
+    where: { monitor: { userId }, createdAt: { gte: twentyFourHoursAgo } },
+    select: { status: true, createdAt: true },
+    orderBy: { createdAt: "asc" }
+  });
+
+  const hours: Record<string, { up: number; total: number }> = {};
+  
+  for (let i = 23; i >= 0; i--) {
+    const d = new Date();
+    d.setHours(d.getHours() - i);
+    const hourStr = d.getHours().toString().padStart(2, "0") + ":00";
+    hours[hourStr] = { up: 0, total: 0 };
+  }
+
+  recentChecks.forEach(check => {
+    const hourStr = check.createdAt.getHours().toString().padStart(2, "0") + ":00";
+    if (hours[hourStr]) {
+      hours[hourStr].total++;
+      if (check.status === "up") hours[hourStr].up++;
+    }
+  });
+
+  const trendData = Object.entries(hours).map(([name, stats]) => ({
+    name,
+    uptime: stats.total > 0 ? Number(((stats.up / stats.total) * 100).toFixed(2)) : 100,
+  })).reverse().reverse(); // Keep chronological order
+
+  return { uptime30d, trendData };
 }

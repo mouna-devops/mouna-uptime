@@ -12,18 +12,20 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import { getMonitors, getRecentIncidents } from "@/lib/actions/monitor";
+import { getMonitors, getRecentIncidents, getDashboardStats } from "@/lib/actions/monitor";
 
 export default function DashboardOverview() {
   const [monitors, setMonitors] = useState<any[]>([]);
   const [incidents, setIncidents] = useState<any[]>([]);
+  const [stats, setStats] = useState({ uptime30d: "100.00", trendData: [] as any[] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
-      const [m, i] = await Promise.all([getMonitors(), getRecentIncidents()]);
+      const [m, i, s] = await Promise.all([getMonitors(), getRecentIncidents(), getDashboardStats()]);
       setMonitors(m);
       setIncidents(i);
+      setStats(s);
       setLoading(false);
     };
     loadData();
@@ -32,14 +34,7 @@ export default function DashboardOverview() {
   const upCount = monitors.filter(m => m.status === 'up').length;
   const downCount = monitors.filter(m => m.status === 'down').length;
 
-  // Using static mock data for overall uptime trend as complex aggregation 
-  // across all monitors typically requires a specialized query.
-  const mockData = [
-    { name: "10:00", uptime: 100 },
-    { name: "11:00", uptime: 98 },
-    { name: "12:00", uptime: 99.9 },
-    { name: "13:00", uptime: 100 },
-  ];
+  // We now fetch actual data dynamically via stats.trendData
 
   return (
     <div className="space-y-6">
@@ -85,7 +80,7 @@ export default function DashboardOverview() {
             <ArrowUpRight className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">99.98%</div>
+            <div className="text-2xl font-bold">{loading ? "..." : `${stats.uptime30d}%`}</div>
           </CardContent>
         </Card>
       </div>
@@ -99,7 +94,7 @@ export default function DashboardOverview() {
           <CardContent className="pl-2">
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={mockData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={loading ? [] : stats.trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#888' }} domain={['dataMin - 1', 100]} />

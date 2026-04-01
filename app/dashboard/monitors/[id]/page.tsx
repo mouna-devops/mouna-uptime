@@ -23,6 +23,7 @@ export default function MonitorDetail({ params }: { params: Promise<{ id: string
   const [editUrl, setEditUrl] = useState("");
   const [editType, setEditType] = useState("HTTP(s)");
   const [editInterval, setEditInterval] = useState("5");
+  const [editTimeout, setEditTimeout] = useState("30");
 
   const loadMonitor = async () => {
     setLoading(true);
@@ -33,6 +34,7 @@ export default function MonitorDetail({ params }: { params: Promise<{ id: string
       setEditUrl(data.url);
       setEditType(data.type);
       setEditInterval(data.interval.toString());
+      setEditTimeout(data.timeout ? data.timeout.toString() : "30");
     }
     setLoading(false);
   };
@@ -43,7 +45,8 @@ export default function MonitorDetail({ params }: { params: Promise<{ id: string
       name: editName,
       url: editUrl,
       type: editType,
-      interval: parseInt(editInterval, 10)
+      interval: parseInt(editInterval, 10),
+      timeout: parseInt(editTimeout, 10)
     });
     setIsEditModalOpen(false);
     loadMonitor();
@@ -269,6 +272,10 @@ export default function MonitorDetail({ params }: { params: Promise<{ id: string
                 <option value="30">Every 30 minutes</option>
                 <option value="60">Every 1 hour</option>
               </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Timeout (Seconds)</label>
+              <Input type="number" min="1" max="60" value={editTimeout} onChange={e => setEditTimeout(e.target.value)} required />
             </div>
           </div>
           <div className="pt-4 flex justify-end gap-3">

@@ -39,8 +39,9 @@ export async function GET(request: Request) {
         
         try {
           if (monitor.type.includes("HTTP")) {
-            // Using a 8 second strict timeout for each fetch to ensure we don't block Netlify 10s default timeout
-            const response = await fetch(monitor.url, { method: "GET", signal: AbortSignal.timeout(8000) });
+            // Using custom timeout for each fetch to prevent hanging requests indefinitely
+            const customTimeout = monitor.timeout ? monitor.timeout * 1000 : 8000;
+            const response = await fetch(monitor.url, { method: "GET", signal: AbortSignal.timeout(customTimeout) });
             isUp = response.ok;
           } else {
             isUp = true; // Mock implementation for Ping/Port demo

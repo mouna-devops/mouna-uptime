@@ -20,6 +20,7 @@ export default function MonitorsList() {
   const [url, setUrl] = useState("");
   const [type, setType] = useState("HTTP(S)");
   const [interval, setInterval] = useState("1");
+  const [timeout, setTimeoutVal] = useState("30");
   const [saving, setSaving] = useState(false);
 
   const loadMonitors = async () => {
@@ -40,7 +41,7 @@ export default function MonitorsList() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await createMonitor({ name, url, type, interval: parseInt(interval) });
+    await createMonitor({ name, url, type, interval: parseInt(interval), timeout: parseInt(timeout) });
     setIsAddModalOpen(false);
     setName("");
     setUrl("");
@@ -177,6 +178,10 @@ export default function MonitorsList() {
                 <option value="10">10 Minutes</option>
                 <option value="30">30 Minutes</option>
               </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Timeout (Seconds)</label>
+              <Input type="number" min="1" max="60" value={timeout} onChange={e => setTimeoutVal(e.target.value)} required />
             </div>
           </div>
           <div className="pt-4 flex justify-end gap-3">
