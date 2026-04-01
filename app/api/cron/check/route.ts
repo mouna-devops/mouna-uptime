@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sendWebhookAlerts } from "@/lib/webhooks";
+import { sendPersonalEmailAlert } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -71,16 +72,21 @@ export async function GET(request: Request) {
           });
           console.log(`!! INCIDENT CREATED for ${monitor.name}`);
           try {
-            await sendWebhookAlerts({
-              userId: monitor.userId,
-              event: "incident.opened",
-              monitor: { id: monitor.id, name: monitor.name, url: monitor.url, type: monitor.type },
-              status: "down",
-              responseTime,
-              at: now,
-            });
+            if (monitor.isPersonalAlert && monitor.personalAlertEmail) {
+              const html = `<h2>MouNa Monitoring Alert</h2><p>Your monitor <b>${monitor.name}</b> is down.</p><p>URL: ${monitor.url}</p><p>Time: ${now.toLocaleString()}</p>`;
+              await sendPersonalEmailAlert(monitor.personalAlertEmail, `[DOWN] ${monitor.name} is down`, html);
+            } else {
+              await sendWebhookAlerts({
+                userId: monitor.userId,
+                event: "incident.opened",
+                monitor: { id: monitor.id, name: monitor.name, url: monitor.url, type: monitor.type },
+                status: "down",
+                responseTime,
+                at: now,
+              });
+            }
           } catch (err) {
-            console.warn("!! WEBHOOK FAILED (opened)", err);
+            console.warn("!! ALERT FAILED (opened)", err);
           }
         } else if (monitor.status === "down" && newStatus === "up") {
           await db.incident.updateMany({
@@ -89,16 +95,21 @@ export async function GET(request: Request) {
           });
           console.log(`!! INCIDENT RESOLVED for ${monitor.name}`);
           try {
-            await sendWebhookAlerts({
-              userId: monitor.userId,
-              event: "incident.resolved",
-              monitor: { id: monitor.id, name: monitor.name, url: monitor.url, type: monitor.type },
-              status: "up",
-              responseTime,
-              at: now,
-            });
+            if (monitor.isPersonalAlert && monitor.personalAlertEmail) {
+              const html = `<h2>MouNa Monitoring Alert</h2><p>Your monitor <b>${monitor.name}</b> is back up.</p><p>URL: ${monitor.url}</p><p>Time: ${now.toLocaleString()}</p><p>Response Time: ${responseTime}ms</p>`;
+              await sendPersonalEmailAlert(monitor.personalAlertEmail, `[UP] ${monitor.name} is resolved`, html);
+            } else {
+              await sendWebhookAlerts({
+                userId: monitor.userId,
+                event: "incident.resolved",
+                monitor: { id: monitor.id, name: monitor.name, url: monitor.url, type: monitor.type },
+                status: "up",
+                responseTime,
+                at: now,
+              });
+            }
           } catch (err) {
-            console.warn("!! WEBHOOK FAILED (resolved)", err);
+            console.warn("!! ALERT FAILED (resolved)", err);
           }
         }
         

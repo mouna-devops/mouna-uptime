@@ -24,6 +24,8 @@ export default function MonitorDetail({ params }: { params: Promise<{ id: string
   const [editType, setEditType] = useState("HTTP(s)");
   const [editInterval, setEditInterval] = useState("5");
   const [editTimeout, setEditTimeout] = useState("30");
+  const [editIsPersonalAlert, setEditIsPersonalAlert] = useState(false);
+  const [editPersonalAlertEmail, setEditPersonalAlertEmail] = useState("");
 
   const loadMonitor = async () => {
     setLoading(true);
@@ -35,6 +37,8 @@ export default function MonitorDetail({ params }: { params: Promise<{ id: string
       setEditType(data.type);
       setEditInterval(data.interval.toString());
       setEditTimeout(data.timeout ? data.timeout.toString() : "30");
+      setEditIsPersonalAlert(data.isPersonalAlert || false);
+      setEditPersonalAlertEmail(data.personalAlertEmail || "");
     }
     setLoading(false);
   };
@@ -46,7 +50,9 @@ export default function MonitorDetail({ params }: { params: Promise<{ id: string
       url: editUrl,
       type: editType,
       interval: parseInt(editInterval, 10),
-      timeout: parseInt(editTimeout, 10)
+      timeout: parseInt(editTimeout, 10),
+      isPersonalAlert: editIsPersonalAlert,
+      personalAlertEmail: editIsPersonalAlert ? editPersonalAlertEmail : undefined
     });
     setIsEditModalOpen(false);
     loadMonitor();
@@ -277,6 +283,29 @@ export default function MonitorDetail({ params }: { params: Promise<{ id: string
               <label className="text-sm font-medium">Timeout (Seconds)</label>
               <Input type="number" min="1" max="60" value={editTimeout} onChange={e => setEditTimeout(e.target.value)} required />
             </div>
+          </div>
+          <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+            <label className="flex items-center gap-2 cursor-pointer mt-2 w-fit">
+              <input 
+                type="checkbox" 
+                className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                checked={editIsPersonalAlert}
+                onChange={e => setEditIsPersonalAlert(e.target.checked)}
+              />
+              <span className="text-sm font-medium">Send alert only to me</span>
+            </label>
+            {editIsPersonalAlert && (
+              <div className="space-y-2 mt-3">
+                <label className="text-sm font-medium">Personal Alert Emails (comma-separated for CC)</label>
+                <Input 
+                  placeholder="e.g., email1@ex.com, email2@ex.com" 
+                  type="text" 
+                  required 
+                  value={editPersonalAlertEmail} 
+                  onChange={e => setEditPersonalAlertEmail(e.target.value)} 
+                />
+              </div>
+            )}
           </div>
           <div className="pt-4 flex justify-end gap-3">
             <Button variant="outline" type="button" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>

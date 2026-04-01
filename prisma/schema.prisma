@@ -26,14 +26,16 @@ model Monitor {
   name        String
   url         String
   type        String      // HTTP, Ping, Port
-  interval    Int         // Interval in minutes
-  timeout     Int         @default(30) // Timeout in seconds
-  status      String      @default("up") // up, down, paused
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  checks      Check[]
-  incidents   Incident[]
-  statusPages StatusPage[] @relation("MonitorToStatusPage")
+  interval          Int         // Interval in minutes
+  timeout           Int         @default(30) // Timeout in seconds
+  status            String      @default("up") // up, down, paused
+  isPersonalAlert   Boolean     @default(false)
+  personalAlertEmail String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  checks            Check[]
+  incidents         Incident[]
+  statusPages       StatusPage[] @relation("MonitorToStatusPage")
 }
 
 model Check {

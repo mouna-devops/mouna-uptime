@@ -21,6 +21,8 @@ export default function MonitorsList() {
   const [type, setType] = useState("HTTP(S)");
   const [interval, setInterval] = useState("1");
   const [timeout, setTimeoutVal] = useState("30");
+  const [isPersonalAlert, setIsPersonalAlert] = useState(false);
+  const [personalAlertEmail, setPersonalAlertEmail] = useState("");
   const [saving, setSaving] = useState(false);
 
   const loadMonitors = async () => {
@@ -41,10 +43,20 @@ export default function MonitorsList() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await createMonitor({ name, url, type, interval: parseInt(interval), timeout: parseInt(timeout) });
+    await createMonitor({ 
+      name, 
+      url, 
+      type, 
+      interval: parseInt(interval), 
+      timeout: parseInt(timeout),
+      isPersonalAlert,
+      personalAlertEmail: isPersonalAlert ? personalAlertEmail : undefined
+    });
     setIsAddModalOpen(false);
     setName("");
     setUrl("");
+    setIsPersonalAlert(false);
+    setPersonalAlertEmail("");
     setSaving(false);
     loadMonitors();
   };
@@ -183,6 +195,29 @@ export default function MonitorsList() {
               <label className="text-sm font-medium">Timeout (Seconds)</label>
               <Input type="number" min="1" max="60" value={timeout} onChange={e => setTimeoutVal(e.target.value)} required />
             </div>
+          </div>
+          <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+            <label className="flex items-center gap-2 cursor-pointer mt-2 w-fit">
+              <input 
+                type="checkbox" 
+                className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                checked={isPersonalAlert}
+                onChange={e => setIsPersonalAlert(e.target.checked)}
+              />
+              <span className="text-sm font-medium">Send alert only to me</span>
+            </label>
+            {isPersonalAlert && (
+              <div className="space-y-2 mt-3">
+                <label className="text-sm font-medium">Personal Alert Emails (comma-separated for CC)</label>
+                <Input 
+                  placeholder="e.g., email1@ex.com, email2@ex.com" 
+                  type="text" 
+                  required 
+                  value={personalAlertEmail} 
+                  onChange={e => setPersonalAlertEmail(e.target.value)} 
+                />
+              </div>
+            )}
           </div>
           <div className="pt-4 flex justify-end gap-3">
             <Button variant="outline" type="button" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>

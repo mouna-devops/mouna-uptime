@@ -71,7 +71,7 @@ export async function getMonitor(id: string) {
   });
 }
 
-export async function createMonitor(data: { name: string; url: string; type: string; interval: number; timeout: number }) {
+export async function createMonitor(data: { name: string; url: string; type: string; interval: number; timeout: number; isPersonalAlert?: boolean; personalAlertEmail?: string }) {
   const userId = await requireSessionUserId();
   await ensureUserExists(userId);
   
@@ -83,6 +83,8 @@ export async function createMonitor(data: { name: string; url: string; type: str
       type: data.type,
       interval: data.interval,
       timeout: data.timeout,
+      isPersonalAlert: data.isPersonalAlert || false,
+      personalAlertEmail: data.personalAlertEmail || null,
       status: "up",
     }
   });
@@ -92,7 +94,7 @@ export async function createMonitor(data: { name: string; url: string; type: str
   return monitor;
 }
 
-export async function updateMonitor(id: string, data: { name: string; url: string; type: string; interval: number; timeout: number }) {
+export async function updateMonitor(id: string, data: { name: string; url: string; type: string; interval: number; timeout: number; isPersonalAlert?: boolean; personalAlertEmail?: string }) {
   const userId = await requireSessionUserId();
   const monitor = await db.monitor.updateMany({
     where: { id, userId },
@@ -102,6 +104,8 @@ export async function updateMonitor(id: string, data: { name: string; url: strin
       type: data.type,
       interval: data.interval,
       timeout: data.timeout,
+      isPersonalAlert: data.isPersonalAlert,
+      personalAlertEmail: data.personalAlertEmail,
     }
   });
   

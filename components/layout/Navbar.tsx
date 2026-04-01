@@ -25,7 +25,7 @@ export function Navbar() {
         </nav> */}
 
         <div className="flex items-center gap-4">
-          <Link href="/login" className="hidden text-sm font-medium text-gray-600 hover:text-primary sm:block dark:text-gray-300">
+          <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-primary dark:text-gray-300">
             Login
           </Link>
           {/* <Link href="/signup">
