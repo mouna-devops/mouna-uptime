@@ -1,1 +1,92 @@
+name: Deploy Container
+on:
+  push:
+    branches: [ main ]
 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set image version
+      run: |
+        SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+        echo "IMAGE_TAG=m-s-m-frontend:$SHORT_SHA" >> $GITHUB_ENV
+        echo "IMAGE_LATEST=m-s-m-frontend:latest" >> $GITHUB_ENV
+        echo "Version: $SHORT_SHA"
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ env.IMAGE_TAG }} -t ${{ env.IMAGE_LATEST }} .
+        echo "✅ Image buildée : ${{ env.IMAGE_TAG }}"
+
+    - name: Save & transfer image to server
+      env:
+        SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+      run: |
+        docker save m-s-m-frontend:latest | gzip > m-s-m-frontend.tar.gz
+
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
+
+        scp -i ~/.ssh/id_rsa m-s-m-frontend.tar.gz $SERVER_USER@$SERVER_IP:/tmp/
+
+    - name: Deploy on Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          IMAGE_TAG="m-s-m-frontend:$SHORT_SHA"
+
+          echo "📥 Chargement de l'image..."
+          docker load < /tmp/m-s-m-frontend.tar.gz
+
+          # Tagger avec le SHA sur le serveur
+          docker tag m-s-m-frontend:latest $IMAGE_TAG
+
+          echo "🛑 Arrêt de l'ancien conteneur..."
+          docker stop m-s-m-frontend || true
+          docker rm m-s-m-frontend || true
+
+          echo "🚀 Démarrage de la version $SHORT_SHA..."
+          docker run -d \
+            --name m-s-m-frontend \
+            --network web \
+            --label version=$SHORT_SHA \
+            --label deployed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --restart unless-stopped \
+            -e VITE_API_URL=https://projetmepuabackend.mounagroup.com \
+            -e GOOGLE_API_KEY=AIzaSyCKgIZNnyLN1Wzv7KAWoUZce07UBZISn5g \
+            --label "traefik.enable=true" \
+            --label "traefik.http.routers.myapp.rule=Host(\`projetmepua.mounagroup.com\`)" \
+            --label "traefik.http.routers.myapp.entrypoints=websecure" \
+            --label "traefik.http.routers.myapp.tls.certresolver=letsencrypt" \
+            --label "traefik.http.services.myapp.loadbalancer.server.port=8080" \
+            m-s-m-frontend:latest
+
+          echo "✅ Déploiement terminé !"
+          sleep 3
+          docker ps | grep m-s-m-frontend
+          docker logs m-s-m-frontend --tail=20
+
+          echo "🗂️ Images disponibles sur le serveur :"
+          docker images m-s-m-frontend
+
+          # Garder seulement les 5 dernières versions, supprimer les plus anciennes
+          echo "🧹 Nettoyage des anciennes images..."
+          docker images m-s-m-frontend --format "{{.Tag}} {{.ID}}" \
+            | grep -v latest \
+            | sort -r \
+            | awk 'NR>2 {print $2}' \
+            | xargs -r docker rmi || true
+
+          rm /tmp/m-s-m-frontend.tar.gz
